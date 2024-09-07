@@ -7,10 +7,29 @@ pub enum Node {
 }
 
 #[derive(Debug)]
-pub enum Attribute {
-    Empty(String),
-    Literal(String, String),
-    Expression(String, TokenStream),
+pub enum AttributeValue {
+    Empty,
+    Literal(String),
+    Expression(TokenStream),
+}
+
+#[derive(Debug)]
+pub struct Attribute {
+    pub name: String,
+    pub value: AttributeValue,
+}
+
+impl Attribute {
+    pub fn new(name: String, value: AttributeValue) -> Self {
+        Self { name, value }
+    }
+
+    pub fn empty(name: String) -> Self {
+        Self {
+            name,
+            value: AttributeValue::Empty,
+        }
+    }
 }
 
 #[derive(Debug)]

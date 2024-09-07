@@ -10,3 +10,5 @@ members = [
 
 [dependencies]
 htmi-macros = { path = "macros" }
+html-escape = "0.2.13"
+

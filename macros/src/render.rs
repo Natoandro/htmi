@@ -1,6 +1,6 @@
-use crate::document::{Attribute, Node};
-use proc_macro::{Literal, TokenTree};
-use quote::quote;
+use crate::document::{Attribute, AttributeValue, Node};
+use proc_macro::{Delimiter, Group, Literal, TokenStream, TokenTree};
+use quote::{quote, ToTokens as _};
 
 pub trait Render {
     fn render_into(self, target: &mut Vec<TokenTree>);
@@ -15,23 +15,32 @@ impl Render for Node {
             Node::Element(el) => {
                 target.push(quote_str(&format!("<{}", el.tag)));
                 for attr in el.attributes {
-                    match attr {
-                        Attribute::Empty(name) => {
-                            target.push(quote_str(&format!(" {}", name)));
+                    match attr.value {
+                        AttributeValue::Empty => {
+                            target.push(quote_str(&format!(" {}", attr.name)));
                         }
-                        Attribute::Literal(name, value) => {
-                            // TODO escaping
-                            target.push(quote_str(&format!(" {}={}", name, value)));
+                        AttributeValue::Literal(value) => {
+                            // TODO perf: buffer?
+                            target.push(quote_str(&format!(
+                                " {}=\"{}\"",
+                                attr.name,
+                                html_escape::encode_double_quoted_attribute(&value)
+                            )));
                         }
-                        Attribute::Expression(name, value) => {
-                            target.push(quote_str(&format!(" {}=", name)));
+                        AttributeValue::Expression(value) => {
+                            target.push(quote_str(&format!(" {}=", attr.name)));
+                            let value: TokenStream = TokenTree::Group(Group::new(
+                                proc_macro::Delimiter::Brace,
+                                value.into_iter().collect(),
+                            ))
+                            .into();
                             let value: syn::Expr =
                                 syn::parse(value).expect("could not parse expression");
-                            // TODO excape strings in value?
+                            // TODO pref: skip to_string for string values...
                             let stream: proc_macro::TokenStream =
-                                quote!(& #value .to_string()).into();
-                            let group = TokenTree::Group(proc_macro::Group::new(
-                                proc_macro::Delimiter::Parenthesis,
+                                quote!(&htmi::utils::escape_attribute(&#value.to_string())).into();
+                            let group = TokenTree::Group(Group::new(
+                                proc_macro::Delimiter::None,
                                 stream.into_iter().collect(),
                             ));
                             target.push(quote_str("\""));

@@ -1,0 +1,8 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[tasks.test-dbg]
+toolchain = "nightly"
+command = "cargo"
+args = ["test"]
+env = { "RUSTFLAGS" = "-Zproc-macro-backtrace" }
