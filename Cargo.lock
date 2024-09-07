@@ -6,16 +6,16 @@ version = 3
 name = "htmi"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "htmi-macros",
 ]
 
 [[package]]
-name = "htmi-tests"
+name = "htmi-macros"
 version = "0.1.0"
 dependencies = [
- "htmi",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
